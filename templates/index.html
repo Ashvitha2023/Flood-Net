@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Dam Flood Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 800;
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1.2px;
+      margin-bottom: 30px;
+      animation: fadeIn 1s ease forwards;
+    }
+    .data-card {
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(15px);
+      padding: 25px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      margin-bottom: 25px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .data-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    }
+    .prediction-badge {
+      font-size: 20px;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 15px;
+      text-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+    .prediction-yes {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      box-shadow: 0 0 20px #ff416c;
+    }
+    .prediction-no {
+      background: linear-gradient(135deg, #00f260, #0575e6);
+      box-shadow: 0 0 20px #00f260;
+    }
+    .risk-indicator {
+      font-weight: 700;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease;
+      margin-top: 15px;
+    }
+    .risk-indicator:hover { transform: scale(1.05); }
+    .risk-low { background-color: #28a745; }
+    .risk-medium { background-color: #ffc107; color: black; }
+    .risk-high { background-color: #dc3545; }
+    .risk-severe { background-color: #6f0000; }
+    table { border-collapse: separate; border-spacing: 0; border-radius: 15px; overflow: hidden; }
+    table th, table td { padding: 12px 15px; text-align: center; }
+    table tbody tr:hover { background: rgba(255, 255, 255, 0.1); }
+    .badge-low { background-color: #28a745; font-weight: bold; }
+    .badge-medium { background-color: #ffc107; color:black; font-weight: bold; }
+    .badge-high { background-color: #dc3545; font-weight: bold; }
+    .badge-severe { background-color: #6f0000; font-weight: bold; }
+    .mini-chart { width: 100%; height: 60px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0);} }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1>Dam Flood Dashboard</h1>
+
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="data-card text-center">
+          <h3>Current location : Kodeveri Dam</h3>
+          <span id="prediction-badge" class="prediction-badge prediction-no">No Flood Predicted</span>
+          <div id="risk-level" class="risk-indicator risk-low">Loading...</div>
+          <p class="mt-3">Last updated: <span id="last-updated">-</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="data-card text-center">
+          <h4>Water Level</h4>
+          <h2 id="water-level">-- mm</h2>
+          <canvas id="waterChart" class="mini-chart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="data-card text-center">
+          <h4>Temperature</h4>
+          <h2 id="temperature">-- °C</h2>
+          <canvas id="tempChart" class="mini-chart"></canvas>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="data-card text-center">
+          <h4>Rainfall</h4>
+          <h2 id="rainfall">-- mm</h2>
+          <canvas id="rainChart" class="mini-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="data-card">
+          <h3>Nearby Dams</h3>
+          <table class="table table-striped" id="nearby-dams-table">
+            <thead>
+              <tr>
+                <th>Dam ID</th>
+                <th>Distance (km)</th>
+                <th>Water Level (mm)</th>
+                <th>Temp (°C)</th>
+                <th>Rainfall (mm)</th>
+                <th>Flood Risk</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let waterData=[], tempData=[], rainData=[], labels=[];
+
+function updateDashboard(){
+  fetch('/data')
+  .then(res=>res.json())
+  .then(data=>{
+    const myDam=data.find(d=>d.dam_id==="DAM001");
+    if(myDam){
+      document.getElementById('water-level').textContent=myDam.water_level.toFixed(1)+' mm';
+      document.getElementById('temperature').textContent=myDam.temperature.toFixed(1)+' °C';
+      document.getElementById('rainfall').textContent=myDam.rainfall.toFixed(1)+' mm';
+      document.getElementById('last-updated').textContent=myDam.timestamp;
+
+      const riskElem=document.getElementById('risk-level');
+      const level=myDam.risk_level.toLowerCase();
+      riskElem.textContent=myDam.risk_level+' Risk ('+(myDam.probability*100).toFixed(1)+'%)';
+      riskElem.className='risk-indicator risk-'+level;
+
+      const badge=document.getElementById('prediction-badge');
+      if(myDam.prediction===1){
+        badge.textContent="Flood Predicted";
+        badge.className="prediction-badge prediction-yes";
+      } else {
+        badge.textContent="No Flood Predicted";
+        badge.className="prediction-badge prediction-no";
+      }
+
+      const time=new Date().toLocaleTimeString();
+      if(labels.length>10){ labels.shift(); waterData.shift(); tempData.shift(); rainData.shift();}
+      labels.push(time);
+      waterData.push(myDam.water_level); tempData.push(myDam.temperature); rainData.push(myDam.rainfall);
+      waterChart.update(); tempChart.update(); rainChart.update();
+    }
+
+    const tbody=document.querySelector('#nearby-dams-table tbody');
+    tbody.innerHTML='';
+    data.forEach(dam=>{
+      if(dam.dam_id!=="DAM001"){
+        let riskClass='badge-low';
+        switch(dam.risk_level.toLowerCase()){
+          case 'medium': riskClass='badge-medium'; break;
+          case 'high': riskClass='badge-high'; break;
+          case 'severe': riskClass='badge-severe'; break;
+        }
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${dam.dam_id}</td>
+          <td>${dam.distance_km}</td>
+          <td>${dam.water_level}</td>
+          <td>${dam.temperature}</td>
+          <td>${dam.rainfall}</td>
+          <td><span class="badge ${riskClass}">${dam.risk_level}</span></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+  }).catch(err=>console.error(err));
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const ctxWater=document.getElementById('waterChart').getContext('2d');
+  window.waterChart=new Chart(ctxWater,{
+    type:'line',
+    data:{labels,datasets:[{label:'Water Level', data:waterData, borderColor:'#00f2ff', backgroundColor:'rgba(0,242,255,0.2)', tension:0.3, fill:true}]},
+    options:{responsive:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}}
+  });
+  const ctxTemp=document.getElementById('tempChart').getContext('2d');
+  window.tempChart=new Chart(ctxTemp,{
+    type:'line',
+    data:{labels,datasets:[{label:'Temperature', data:tempData, borderColor:'#ffbf00', backgroundColor:'rgba(255,191,0,0.2)', tension:0.3, fill:true}]},
+    options:{responsive:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}}
+  });
+  const ctxRain=document.getElementById('rainChart').getContext('2d');
+  window.rainChart=new Chart(ctxRain,{
+    type:'line',
+    data:{labels,datasets:[{label:'Rainfall', data:rainData, borderColor:'#00ff92', backgroundColor:'rgba(0,255,146,0.2)', tension:0.3, fill:true}]},
+    options:{responsive:true, plugins:{legend:{display:false}}, scales:{x:{display:false}, y:{display:false}}}
+  });
+
+  updateDashboard();
+  setInterval(updateDashboard,5000);
+});
+</script>
+</body>
+</html>

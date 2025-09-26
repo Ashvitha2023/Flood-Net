@@ -1,0 +1,51 @@
+id,name,latitude,longitude,capacity
+S1,Govt School - Hilltop,10.982,78.345,500
+S2,Community Hall,10.990,78.360,300
+S3,Temple Ground,10.975,78.330,200
+S4,College Auditorium,10.995,78.350,800
+S5,Open Playground,10.970,78.320,1000
+S6,Primary School,10.985,78.310,400
+S7,Local Library Hall,10.978,78.370,250
+S8,Panchayat Office,10.965,78.335,350
+S9,High School Ground,10.992,78.315,600
+S10,Marriage Hall,10.988,78.325,450
+S11,Church Community Center,10.972,78.340,500
+S12,Temple Auditorium,10.980,78.355,700
+S13,College Hostel,10.997,78.365,800
+S14,Public Park,10.960,78.345,1200
+S15,Bus Stand Shelter,10.975,78.310,300
+S16,Market Complex,10.985,78.395,500
+S17,Government Hostel,10.972,78.385,400
+S18,Stadium,10.962,78.375,2000
+S19,Community Kitchen,10.958,78.360,250
+S20,Old Age Home Hall,10.966,78.320,350
+S21,Training Center,10.981,78.338,450
+S22,Private School Hall,10.986,78.345,600
+S23,College Seminar Hall,10.996,78.340,700
+S24,Temple Courtyard,10.968,78.332,200
+S25,Railway Station Shelter,10.955,78.350,800
+S26,Municipal Office Hall,10.973,78.318,300
+S27,Warehouse Shelter,10.987,78.380,1000
+S28,Industrial Estate Hall,10.993,78.370,600
+S29,Private Auditorium,10.979,78.390,500
+S30,Open Ground 1,10.965,78.325,1500
+S31,Open Ground 2,10.961,78.335,1300
+S32,Temple Festival Ground,10.954,78.340,2000
+S33,College Canteen Hall,10.984,78.360,400
+S34,Block Development Office,10.976,78.350,300
+S35,School Auditorium,10.982,78.330,500
+S36,Highway Motel Shelter,10.990,78.310,350
+S37,Government Hospital Hall,10.995,78.320,600
+S38,Private Hospital Parking,10.963,78.315,400
+S39,Tech Park Auditorium,10.970,78.380,900
+S40,Bus Depot Hall,10.955,78.365,500
+S41,Market Parking Area,10.960,78.310,800
+S42,Temple Complex,10.969,78.355,700
+S43,Police Training Hall,10.978,78.320,350
+S44,Community Hall 2,10.981,78.385,400
+S45,Railway Workshop Shelter,10.957,78.385,1000
+S46,Old Temple Ground,10.952,78.325,1200
+S47,Warehouse 2,10.968,78.395,1500
+S48,ITI Training Center,10.976,78.310,350
+S49,Private Marriage Hall 2,10.983,78.375,500
+S50,Public Auditorium,10.988,78.335,900
